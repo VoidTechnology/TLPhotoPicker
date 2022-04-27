@@ -14,7 +14,7 @@ protocol TLPhotoLibraryDelegate: AnyObject {
     func loadCompleteAllCollection(collections: [TLAssetsCollection])
 }
 
-class TLPhotoLibrary {
+public class TLPhotoLibrary {
     
     weak var delegate: TLPhotoLibraryDelegate? = nil
     
@@ -30,7 +30,7 @@ class TLPhotoLibrary {
     }
     
     @discardableResult
-    func livePhotoAsset(asset: PHAsset, size: CGSize = CGSize(width: 720, height: 1280), progressBlock: Photos.PHAssetImageProgressHandler? = nil, completionBlock:@escaping (PHLivePhoto,Bool)-> Void ) -> PHImageRequestID {
+    public func livePhotoAsset(asset: PHAsset, size: CGSize = CGSize(width: 720, height: 1280), progressBlock: Photos.PHAssetImageProgressHandler? = nil, completionBlock:@escaping (PHLivePhoto,Bool)-> Void ) -> PHImageRequestID {
         let options = PHLivePhotoRequestOptions()
         options.deliveryMode = .opportunistic
         options.isNetworkAccessAllowed = true
@@ -47,7 +47,7 @@ class TLPhotoLibrary {
     }
     
     @discardableResult
-    func videoAsset(asset: PHAsset, size: CGSize = CGSize(width: 720, height: 1280), progressBlock: Photos.PHAssetImageProgressHandler? = nil, completionBlock:@escaping (AVPlayerItem?, [AnyHashable : Any]?) -> Void ) -> PHImageRequestID {
+    public func videoAsset(asset: PHAsset, size: CGSize = CGSize(width: 720, height: 1280), progressBlock: Photos.PHAssetImageProgressHandler? = nil, completionBlock:@escaping (AVPlayerItem?, [AnyHashable : Any]?) -> Void ) -> PHImageRequestID {
         let options = PHVideoRequestOptions()
         options.isNetworkAccessAllowed = true
         options.deliveryMode = .automatic
@@ -59,7 +59,7 @@ class TLPhotoLibrary {
     }
     
     @discardableResult
-    func imageAsset(asset: PHAsset, size: CGSize = CGSize(width: 160, height: 160), options: PHImageRequestOptions? = nil, completionBlock:@escaping (UIImage,Bool)-> Void ) -> PHImageRequestID {
+    public func imageAsset(asset: PHAsset, size: CGSize = CGSize(width: 160, height: 160), options: PHImageRequestOptions? = nil, completionBlock:@escaping (UIImage,Bool)-> Void ) -> PHImageRequestID {
         var options = options
         if options == nil {
             options = PHImageRequestOptions()

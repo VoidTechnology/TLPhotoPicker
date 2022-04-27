@@ -345,9 +345,9 @@ extension Array {
 }
 
 public struct TLAssetsCollection {
-    var phAssetCollection: PHAssetCollection? = nil
-    var fetchResult: PHFetchResult<PHAsset>? = nil
-    var useCameraButton: Bool = false
+    public var phAssetCollection: PHAssetCollection? = nil
+    public var fetchResult: PHFetchResult<PHAsset>? = nil
+    public internal(set) var useCameraButton: Bool = false
     var recentPosition: CGPoint = CGPoint.zero
     var title: String
     var localIdentifier: String
@@ -365,14 +365,14 @@ public struct TLAssetsCollection {
         self.localIdentifier = collection.localIdentifier
     }
     
-    func getAsset(at index: Int) -> PHAsset? {
+    public func getAsset(at index: Int) -> PHAsset? {
         if self.useCameraButton && index == 0 { return nil }
         let index = index - (self.useCameraButton ? 1 : 0)
         guard let result = self.fetchResult, index < result.count else { return nil }
         return result.object(at: max(index,0))
     }
     
-    func getTLAsset(at indexPath: IndexPath) -> TLPHAsset? {
+    public func getTLAsset(at indexPath: IndexPath) -> TLPHAsset? {
         let isCameraRow = self.useCameraButton && indexPath.section == 0 && indexPath.row == 0
         if isCameraRow {
             return nil

@@ -186,20 +186,20 @@ open class TLPhotosPickerViewController: UIViewController {
     @objc open var handleNoAlbumPermissions: ((TLPhotosPickerViewController) -> Void)? = nil
     @objc open var handleNoCameraPermissions: ((TLPhotosPickerViewController) -> Void)? = nil
     @objc open var dismissCompletion: (() -> Void)? = nil
-    private var completionWithPHAssets: (([PHAsset]) -> Void)? = nil
-    private var completionWithTLPHAssets: (([TLPHAsset]) -> Void)? = nil
-    private var didCancel: (() -> Void)? = nil
+    public private(set) var completionWithPHAssets: (([PHAsset]) -> Void)? = nil
+    public private(set) var completionWithTLPHAssets: (([TLPHAsset]) -> Void)? = nil
+    public private(set) var didCancel: (() -> Void)? = nil
     
-    private var collections = [TLAssetsCollection]()
-    private var focusedCollection: TLAssetsCollection? = nil
-    private var requestIDs = SynchronizedDictionary<IndexPath,PHImageRequestID>()
-    private var playRequestID: (indexPath: IndexPath, requestID: PHImageRequestID)? = nil
-    private var photoLibrary = TLPhotoLibrary()
-    private var queue = DispatchQueue(label: "tilltue.photos.pikcker.queue")
-    private var queueForGroupedBy = DispatchQueue(label: "tilltue.photos.pikcker.queue.for.groupedBy", qos: .utility)
-    private var thumbnailSize = CGSize.zero
-    private var placeholderThumbnail: UIImage? = nil
-    private var cameraImage: UIImage? = nil
+    public private(set) var collections = [TLAssetsCollection]()
+    public private(set) var photoLibrary = TLPhotoLibrary()
+    public private(set) var focusedCollection: TLAssetsCollection? = nil
+    public private(set) var requestIDs = SynchronizedDictionary<IndexPath,PHImageRequestID>()
+    public private(set) var playRequestID: (indexPath: IndexPath, requestID: PHImageRequestID)? = nil
+    public private(set) var queue = DispatchQueue(label: "tilltue.photos.pikcker.queue")
+    public private(set) var queueForGroupedBy = DispatchQueue(label: "tilltue.photos.pikcker.queue.for.groupedBy", qos: .utility)
+    public private(set) var thumbnailSize = CGSize.zero
+    public private(set) var placeholderThumbnail: UIImage? = nil
+    public private(set) var cameraImage: UIImage? = nil
     
     deinit {
         //print("deinit TLPhotosPickerViewController")
@@ -941,7 +941,7 @@ extension TLPhotosPickerViewController: PHPhotoLibraryChangeObserver {
 
 // MARK: - UICollectionView delegate & datasource
 extension TLPhotosPickerViewController: UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDataSourcePrefetching {
-    private func getSelectedAssets(_ asset: TLPHAsset) -> TLPHAsset? {
+    public func getSelectedAssets(_ asset: TLPHAsset) -> TLPHAsset? {
         if let index = self.selectedAssets.firstIndex(where: { $0.phAsset == asset.phAsset }) {
             return self.selectedAssets[index]
         }
@@ -1276,7 +1276,7 @@ extension TLPhotosPickerViewController {
         }
     }
     
-    func toggleSelection(for cell: TLPhotoCollectionViewCell, at indexPath: IndexPath) {
+    open func toggleSelection(for cell: TLPhotoCollectionViewCell, at indexPath: IndexPath) {
         guard let collection = focusedCollection, var asset = collection.getTLAsset(at: indexPath), let phAsset = asset.phAsset else { return }
         
         cell.popScaleAnim()
