@@ -21,6 +21,9 @@ public protocol TLPhotosPickerViewControllerDelegate: AnyObject {
     func didExceedMaximumNumberOfSelection(picker: TLPhotosPickerViewController)
     func handleNoAlbumPermissions(picker: TLPhotosPickerViewController)
     func handleNoCameraPermissions(picker: TLPhotosPickerViewController)
+    
+    func loadCameraRollCollection(collection: TLAssetsCollection)
+    func loadCompleteAllCollection(collections: [TLAssetsCollection])
 }
 
 extension TLPhotosPickerViewControllerDelegate {
@@ -601,6 +604,7 @@ extension TLPhotosPickerViewController: TLPhotoLibraryDelegate {
         self.focusFirstCollection()
         self.indicator.stopAnimating()
         self.reloadTableView()
+        self.delegate?.loadCameraRollCollection(collection: collection)
     }
     
     func loadCompleteAllCollection(collections: [TLAssetsCollection]) {
@@ -613,6 +617,7 @@ extension TLPhotosPickerViewController: TLPhotoLibraryDelegate {
         self.indicator.stopAnimating()
         self.reloadTableView()
         self.registerChangeObserver()
+        self.delegate?.loadCompleteAllCollection(collections: collections)
     }
 }
 
