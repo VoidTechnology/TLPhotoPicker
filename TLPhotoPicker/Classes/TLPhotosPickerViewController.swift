@@ -97,6 +97,8 @@ public struct TLPhotosPickerConfigure {
     public var groupByFetch: PHFetchedResultGroupedBy? = nil
     public var supportedInterfaceOrientations: UIInterfaceOrientationMask = .portrait
     public var popup: [PopupConfigure] = []
+    
+    public var focusFirstCollectionPredicate: ((TLAssetsCollection) -> Bool)? = nil
     public init() {
         
     }
@@ -589,11 +591,16 @@ extension TLPhotosPickerViewController {
     }
     
     private func focusFirstCollection() {
-        if self.focusedCollection == nil, let collection = self.collections.first {
-            self.focusedCollection = collection
-            self.updateTitle()
-            self.reloadCollectionView()
+        guard self.focusedCollection == nil else {
+            return
         }
+        if let predicate = self.configure.focusFirstCollectionPredicate, let collection = self.collections.first(where: predicate) {
+            self.focusedCollection = collection
+        } else if let collection = self.collections.first {
+            self.focusedCollection = collection
+        }
+        self.updateTitle()
+        self.reloadCollectionView()
     }
 }
 
@@ -601,6 +608,11 @@ extension TLPhotosPickerViewController {
 extension TLPhotosPickerViewController: TLPhotoLibraryDelegate {
     func loadCameraRollCollection(collection: TLAssetsCollection) {
         self.collections = [collection]
+        if let predicate = self.configure.focusFirstCollectionPredicate, self.collections.first(where: predicate) == nil {
+            self.delegate?.loadCameraRollCollection(collection: collection)
+            return
+        }
+        
         self.focusFirstCollection()
         self.indicator.stopAnimating()
         self.reloadTableView()
