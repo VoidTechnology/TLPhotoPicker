@@ -24,6 +24,7 @@ public protocol TLPhotosPickerViewControllerDelegate: AnyObject {
     
     func loadCameraRollCollection(collection: TLAssetsCollection)
     func loadCompleteAllCollection(collections: [TLAssetsCollection])
+    func needShowWhenIsEmpty(collection: TLAssetsCollection) -> Bool
 }
 
 extension TLPhotosPickerViewControllerDelegate {
@@ -630,6 +631,10 @@ extension TLPhotosPickerViewController: TLPhotoLibraryDelegate {
         self.reloadTableView()
         self.registerChangeObserver()
         self.delegate?.loadCompleteAllCollection(collections: collections)
+    }
+    
+    func needShowWhenIsEmpty(collection: TLAssetsCollection) -> Bool {
+        self.delegate?.needShowWhenIsEmpty(collection: collection) ?? false
     }
 }
 

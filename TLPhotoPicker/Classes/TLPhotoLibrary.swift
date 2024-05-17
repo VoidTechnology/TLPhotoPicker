@@ -12,6 +12,7 @@ import Photos
 protocol TLPhotoLibraryDelegate: AnyObject {
     func loadCameraRollCollection(collection: TLAssetsCollection)
     func loadCompleteAllCollection(collections: [TLAssetsCollection])
+    func needShowWhenIsEmpty(collection: TLAssetsCollection) -> Bool
 }
 
 public class TLPhotoLibrary {
@@ -191,8 +192,12 @@ extension TLPhotoLibrary {
                     var assetsCollection = TLAssetsCollection(collection: collection)
                     assetsCollection.title = configure.customLocalizedTitle[assetsCollection.title] ?? assetsCollection.title
                     assetsCollection.fetchResult = PHAsset.fetchAssets(in: collection, options: options)
-                    if assetsCollection.count > 0 {
+                    if delegate?.needShowWhenIsEmpty(collection: assetsCollection) ?? false {
                         result.append(assetsCollection)
+                    } else {
+                        if assetsCollection.count > 0 {
+                            result.append(assetsCollection)
+                        }
                     }
                 }
             }
@@ -216,10 +221,18 @@ extension TLPhotoLibrary {
                 var assetsCollection = TLAssetsCollection(collection: collection)
                 assetsCollection.title = configure.customLocalizedTitle[assetsCollection.title] ?? assetsCollection.title
                 assetsCollection.fetchResult = PHAsset.fetchAssets(in: collection, options: options)
-                if assetsCollection.count > 0 || useCameraButton {
+                if useCameraButton {
                     result.append(assetsCollection)
-                    return assetsCollection
+                } else {
+                    if delegate?.needShowWhenIsEmpty(collection: assetsCollection) ?? false {
+                        result.append(assetsCollection)
+                    } else {
+                        if assetsCollection.count > 0 {
+                            result.append(assetsCollection)
+                        }
+                    }
                 }
+                return assetsCollection
             }
             return nil
         }
@@ -278,8 +291,14 @@ extension TLPhotoLibrary {
                     var assetsCollection = TLAssetsCollection(collection: collection)
                     assetsCollection.title = configure.customLocalizedTitle[assetsCollection.title] ?? assetsCollection.title
                     assetsCollection.fetchResult = PHAsset.fetchAssets(in: collection, options: options)
-                    if assetsCollection.count > 0, !assetCollections.contains(where: { $0.localIdentifier == collection.localIdentifier }) {
-                        assetCollections.append(assetsCollection)
+                    if !assetCollections.contains(where: { $0.localIdentifier == collection.localIdentifier }) {
+                        if self?.delegate?.needShowWhenIsEmpty(collection: assetsCollection) ?? false {
+                            assetCollections.append(assetsCollection)
+                        } else {
+                            if assetCollections.count > 0 {
+                                assetCollections.append(assetsCollection)
+                            }
+                        }
                     }
                 })
                 
