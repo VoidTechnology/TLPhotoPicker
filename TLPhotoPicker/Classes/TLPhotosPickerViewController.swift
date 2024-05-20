@@ -398,13 +398,16 @@ extension TLPhotosPickerViewController {
         guard let layout = self.collectionView.collectionViewLayout as? UICollectionViewFlowLayout else {
             return
         }
+        layout.sectionInset.left = 10
+        layout.sectionInset.right = 10
         let count = CGFloat(self.configure.numberOfColumn)
-        let width = floor((self.view.frame.size.width - (self.configure.minimumInteritemSpacing * (count-1))) / count)
+        let width = floor((self.view.bounds.width - layout.sectionInset.left - layout.sectionInset.right - (self.configure.minimumInteritemSpacing * (count-1))) / count)
         self.thumbnailSize = CGSize(width: width, height: width)
         layout.itemSize = self.thumbnailSize
         layout.minimumInteritemSpacing = self.configure.minimumInteritemSpacing
         layout.minimumLineSpacing = self.configure.minimumLineSpacing
         self.collectionView.collectionViewLayout = layout
+        self.collectionView.backgroundColor = UIColor(red: 236.0/256.0, green: 239.0/256.0, blue: 234.0/256.0, alpha: 1)
         self.placeholderThumbnail = centerAtRect(image: self.configure.placeholderIcon, rect: CGRect(x: 0, y: 0, width: width, height: width))
         self.cameraImage = centerAtRect(image: self.configure.cameraIcon, rect: CGRect(x: 0, y: 0, width: width, height: width), bgColor: self.configure.cameraBgColor)
     }
