@@ -25,6 +25,8 @@ public protocol TLPhotosPickerViewControllerDelegate: AnyObject {
     func loadCameraRollCollection(collection: TLAssetsCollection)
     func loadCompleteAllCollection(collections: [TLAssetsCollection])
     func needShowWhenIsEmpty(collection: TLAssetsCollection) -> Bool
+    
+    func getEditedImage(with phAsset: PHAsset) -> UIImage?
 }
 
 extension TLPhotosPickerViewControllerDelegate {
@@ -303,7 +305,7 @@ open class TLPhotosPickerViewController: UIViewController {
         }
     }
     
-    private func checkAuthorization() {
+    public func checkAuthorization() {
         if #available(iOS 14.0, *) {
             let status = PHPhotoLibrary.authorizationStatus(for:  .readWrite)
             processAuthorization(status: status)
@@ -337,7 +339,7 @@ open class TLPhotosPickerViewController: UIViewController {
         }
     }
     
-    private func findIndexAndReloadCells(phAsset: PHAsset) {
+    open func findIndexAndReloadCells(phAsset: PHAsset) {
         if
             self.configure.groupByFetch != nil,
             let indexPath = self.focusedCollection?.findIndex(phAsset: phAsset)
@@ -1036,9 +1038,7 @@ extension TLPhotosPickerViewController: UICollectionViewDelegate,UICollectionVie
             return cell
         }
         guard let asset = collection.getTLAsset(at: indexPath) else { return cell }
-        
         cell.asset = asset.phAsset
-        
         if let selectedAsset = getSelectedAssets(asset) {
             cell.selectedAsset = true
             cell.orderLabel?.text = "\(selectedAsset.selectedOrder)"
@@ -1051,50 +1051,56 @@ extension TLPhotosPickerViewController: UICollectionViewDelegate,UICollectionVie
             cell.indicator?.stopAnimating()
         }
         if let phAsset = asset.phAsset {
-            if self.usedPrefetch {
-                let options = PHImageRequestOptions()
-                options.deliveryMode = .opportunistic
-                options.resizeMode = .exact
-                options.isNetworkAccessAllowed = true
-                let requestID = self.photoLibrary.imageAsset(asset: phAsset, size: self.thumbnailSize, options: options) { [weak self, weak cell] (image,complete) in
-                    guard let `self` = self else { return }
-                    DispatchQueue.main.async {
-                        if self.requestIDs[indexPath] != nil {
-                            cell?.imageView?.image = image
-                            cell?.update(with: phAsset)
-                            if self.allowedVideo {
-                                cell?.durationView?.isHidden = asset.type != .video
-                                cell?.duration = asset.type == .video ? phAsset.duration : nil
-                            }
-                            if complete {
-                                self.requestIDs.removeValue(forKey: indexPath)
-                            }
-                        }
-                    }
-                }
-                if requestID > 0 {
-                    self.requestIDs[indexPath] = requestID
-                }
-            }else {
-                queue.async { [weak self, weak cell] in
-                    guard let `self` = self else { return }
-                    let requestID = self.photoLibrary.imageAsset(asset: phAsset, size: self.thumbnailSize, completionBlock: { (image,complete) in
+            cell.update(with: phAsset)
+            if self.allowedVideo {
+                cell.durationView?.isHidden = asset.type != .video
+                cell.duration = asset.type == .video ? phAsset.duration : nil
+            }
+            if let image = self.delegate?.getEditedImage(with: phAsset) {
+                cell.imageView?.image = image
+            } else {
+                if self.usedPrefetch {
+                    let options = PHImageRequestOptions()
+                    options.deliveryMode = .opportunistic
+                    options.resizeMode = .exact
+                    options.isNetworkAccessAllowed = true
+                    let requestID = self.photoLibrary.imageAsset(
+                        asset: phAsset,
+                        size: self.thumbnailSize,
+                        options: options
+                    ) { [weak self, weak cell] (image,complete) in
+                        guard let `self` = self else { return }
                         DispatchQueue.main.async {
                             if self.requestIDs[indexPath] != nil {
                                 cell?.imageView?.image = image
-                                cell?.update(with: phAsset)
-                                if self.allowedVideo {
-                                    cell?.durationView?.isHidden = asset.type != .video
-                                    cell?.duration = asset.type == .video ? phAsset.duration : nil
-                                }
                                 if complete {
                                     self.requestIDs.removeValue(forKey: indexPath)
                                 }
                             }
                         }
-                    })
+                    }
                     if requestID > 0 {
                         self.requestIDs[indexPath] = requestID
+                    }
+                } else {
+                    queue.async { [weak self, weak cell] in
+                        guard let `self` = self else { return }
+                        let requestID = self.photoLibrary.imageAsset(
+                            asset: phAsset,
+                            size: self.thumbnailSize
+                        ) { (image,complete) in
+                            DispatchQueue.main.async {
+                                if self.requestIDs[indexPath] != nil {
+                                    cell?.imageView?.image = image
+                                    if complete {
+                                        self.requestIDs.removeValue(forKey: indexPath)
+                                    }
+                                }
+                            }
+                        }
+                        if requestID > 0 {
+                            self.requestIDs[indexPath] = requestID
+                        }
                     }
                 }
             }
@@ -1104,9 +1110,15 @@ extension TLPhotosPickerViewController: UICollectionViewDelegate,UICollectionVie
             }
         }
         cell.alpha = 0
-        UIView.transition(with: cell, duration: 0.1, options: .curveEaseIn, animations: {
-            cell.alpha = 1
-        }, completion: nil)
+        UIView.transition(
+            with: cell,
+            duration: 0.1,
+            options: .curveEaseIn,
+            animations: {
+                cell.alpha = 1
+            }, 
+            completion: nil
+        )
         return cell
     }
     
