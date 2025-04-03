@@ -130,7 +130,11 @@ public enum PopupConfigure {
 
 public struct Platform {
     public static var isSimulator: Bool {
-        return TARGET_OS_SIMULATOR != 0 // Use this line in Xcode 7 or newer
+        #if targetEnvironment(simulator)
+            return true
+        #else
+            return false
+        #endif
     }
 }
 
@@ -341,7 +345,7 @@ open class TLPhotosPickerViewController: UIViewController {
             self.thumbnailSize = CGSize.zero
     }
     
-    private func findIndexAndReloadCells(phAsset: PHAsset) {
+    open func findIndexAndReloadCells(phAsset: PHAsset) {
         if
             self.configure.groupByFetch != nil,
             let indexPath = self.focusedCollection?.findIndex(phAsset: phAsset)
